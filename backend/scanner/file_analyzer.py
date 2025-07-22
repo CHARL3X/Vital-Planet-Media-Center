@@ -197,7 +197,7 @@ class FileAnalyzer:
         if any(indicator in path_lower for indicator in print_indicators):
             return 'Print Ready'
         
-        # 2. 3D Mockups - Check FIRST since PNG files in mockup directories are highest priority
+        # 2. 3D Mockups - REFINED to only catch true 3D composite mockups
         mockup_path_indicators = [
             'mock ups/3d', 'mock-ups/3d', 'mockups/3d',
             'old mock-ups', 'old mock ups', 'old mockups',
@@ -205,14 +205,30 @@ class FileAnalyzer:
             '01 - mockups', '00 - 3d'
         ]
         
-        # Check if PNG/PSD/JPG files in mockup directories
-        if any(indicator in path_lower for indicator in mockup_path_indicators):
-            if filename_lower.endswith(('.png', '.jpg', '.jpeg', '.psd')):
-                return '3D Mockup'
+        # True 3D mockups have descriptive composite names, not flat view names
+        true_3d_indicators_in_filename = [
+            'box & bottle', 'bottle & box', 'box and bottle', 'bottle and box',
+            'composite', 'mockup', 'scene', 'render', 'presentation'
+        ]
         
-        # Additional check for PNG files in any directory containing "mock"
-        if 'mock' in path_lower and filename_lower.endswith(('.png', '.jpg', '.jpeg')):
-            return '3D Mockup'
+        # Flat view indicators that should NOT be 3D mockups
+        flat_view_indicators = [
+            'back', 'front', 'left', 'right', 'top', 'bottom', 
+            'side', 'label front', 'label back', 'panel',
+            '-back.', '-front.', '-left.', '-right.', '-top.', '-bottom.',
+            '_back.', '_front.', '_left.', '_right.', '_top.', '_bottom.'
+        ]
+        
+        # Check if in mockup directory AND has true 3D characteristics
+        if any(indicator in path_lower for indicator in mockup_path_indicators):
+            # If it's clearly a flat view, skip 3D classification
+            if any(flat_indicator in filename_lower for flat_indicator in flat_view_indicators):
+                pass  # Let it fall through to Box Art classification
+            # If it's a PSD file or has 3D composite naming, classify as 3D Mockup
+            elif (filename_lower.endswith('.psd') or 
+                  any(indicator in filename_lower for indicator in true_3d_indicators_in_filename) or
+                  (filename_lower.endswith(('.png', '.jpg')) and len(filename_lower) > 20)):  # Complex names likely 3D
+                return '3D Mockup'
         
         # 3. Label Art - check for label-specific patterns
         label_indicators = [
@@ -222,12 +238,22 @@ class FileAnalyzer:
         if any(indicator in path_lower or indicator in filename_lower for indicator in label_indicators):
             return 'Label Art'
         
-        # 4. Box Art - check for box-specific patterns
+        # 4. Box Art - check for box-specific patterns AND flat view images
         box_indicators = [
             'box', '-b', '_b_', '19207b', '19207-b',     # File naming patterns
             '/box/', 'packaging'                          # Path patterns
         ]
-        if any(indicator in path_lower or indicator in filename_lower for indicator in box_indicators):
+        
+        # Flat view images should be Box Art (these are individual product views)
+        flat_view_patterns = [
+            'back', 'front', 'left', 'right', 'top', 'bottom', 
+            'side', 'panel', '-back.', '-front.', '-left.', 
+            '-right.', '-top.', '-bottom.', '_back.', '_front.',
+            '_left.', '_right.', '_top.', '_bottom.'
+        ]
+        
+        if (any(indicator in path_lower or indicator in filename_lower for indicator in box_indicators) or
+            any(pattern in filename_lower for pattern in flat_view_patterns)):
             return 'Box Art'
         
         # 5. Archive/Draft files
@@ -249,10 +275,13 @@ class FileAnalyzer:
         file_ext = filename_lower.split('.')[-1] if '.' in filename_lower else ''
         
         if file_ext in ['png', 'jpg', 'jpeg']:
-            # Images that aren't already classified 
-            # In VP context, most PNGs are either 3D mockups or reference images
-            # Default to 3D Mockup for PNG files as these are commonly the product visuals needed
-            return '3D Mockup'
+            # Images that aren't already classified - be more conservative
+            # If it's in a directory with product references (like "02 - Box & Label Images")
+            # but didn't match 3D mockup criteria, it's likely a flat reference image
+            if '/jpg' in path_lower or 'images' in path_lower or 'reference' in path_lower:
+                return 'Box Art'  # Default flat images to Box Art
+            else:
+                return 'Other'  # Be conservative for unclassified images
         
         if file_ext in ['ai', 'psd']:
             # Design files that aren't already classified
