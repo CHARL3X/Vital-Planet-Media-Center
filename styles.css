@@ -660,3 +660,108 @@ body {
         gap: 0.5rem;
     }
 }
+
+/* Smart Asset Grouping Styles */
+.grouped-asset {
+    border-left: 3px solid var(--primary-color);
+    background: linear-gradient(90deg, rgba(115, 45, 131, 0.05), transparent);
+}
+
+.group-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.format-badges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.format-badges .file-type-badge {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    background: var(--secondary-color) !important;
+    color: white !important;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown-toggle:hover {
+    background: var(--primary-color) !important;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    min-width: 160px;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background: var(--hover-color);
+}
+
+.dropdown-item:first-child {
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.dropdown-item:last-child {
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* Enhanced Format-Specific Colors */
+.format-badges .format-png {
+    background: #17a2b8;
+}
+
+.format-badges .format-psd {
+    background: #001e36;
+}
+
+.format-badges .format-jpg {
+    background: #28a745;
+}
+
+.format-badges .format-ai {
+    background: #ff6600;
+}
+
+/* Grouped Asset Info Enhancement */
+.grouped-asset .asset-name {
+    font-weight: 600;
+    color: var(--primary-color);
+}

@@ -7,7 +7,9 @@ from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 from pathlib import Path
+from collections import defaultdict
 import json
+import re
 
 @dataclass
 class AssetInfo:
@@ -57,6 +59,47 @@ class AssetInfo:
                 size=0,
                 modified=None
             )
+
+@dataclass
+class AssetGroup:
+    """Represents a group of related asset files (e.g., PNG/PSD/JPG of same mockup)."""
+    base_name: str
+    primary_asset: AssetInfo  # The main display asset (usually PNG)
+    related_assets: List[AssetInfo]  # All assets in the group
+    asset_type: str
+    is_current: bool
+    
+    @property
+    def total_assets(self) -> int:
+        """Total number of assets in this group."""
+        return len(self.related_assets)
+    
+    @property
+    def available_formats(self) -> List[str]:
+        """List of available file formats in this group."""
+        return sorted(list(set(asset.extension.replace('.', '').upper() 
+                                for asset in self.related_assets)))
+    
+    def get_asset_by_extension(self, extension: str) -> Optional[AssetInfo]:
+        """Get asset by file extension."""
+        ext = extension.lower().replace('.', '')
+        for asset in self.related_assets:
+            if asset.extension.replace('.', '').lower() == ext:
+                return asset
+        return None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return {
+            'base_name': self.base_name,
+            'primary_asset': self.primary_asset.to_dict(),
+            'related_assets': [asset.to_dict() for asset in self.related_assets],
+            'asset_type': self.asset_type,
+            'is_current': self.is_current,
+            'total_assets': self.total_assets,
+            'available_formats': self.available_formats,
+            'is_grouped': True  # Flag to indicate this is a grouped asset
+        }
 
 @dataclass
 class ProductInfo:
@@ -112,6 +155,67 @@ class ProductInfo:
     def get_archived_assets(self) -> List[AssetInfo]:
         """Get only archived assets."""
         return [asset for asset in self.assets if not asset.is_current]
+    
+    def group_3d_mockups(self) -> List[AssetGroup]:
+        """
+        Group 3D mockup assets by base filename to reduce UI clutter.
+        Groups files like 'Critical Liver Care Box.png/.psd/.jpg' into one item.
+        """
+        # Only group 3D Mockups
+        mockup_assets = [asset for asset in self.assets if asset.type == '3D Mockup']
+        
+        if not mockup_assets:
+            return []
+        
+        # Group by base filename (without extension)
+        groups = defaultdict(list)
+        for asset in mockup_assets:
+            # Remove extension and common suffixes to get base name
+            base_name = self._get_base_filename(asset.name)
+            groups[base_name].append(asset)
+        
+        # Create AssetGroup objects
+        asset_groups = []
+        for base_name, assets in groups.items():
+            if len(assets) > 1:  # Only group if multiple assets
+                # Prioritize PNG as primary, then JPG, then PSD
+                primary_asset = self._select_primary_asset(assets)
+                asset_groups.append(AssetGroup(
+                    base_name=base_name,
+                    primary_asset=primary_asset,
+                    related_assets=assets,
+                    asset_type='3D Mockup',
+                    is_current=primary_asset.is_current
+                ))
+            else:
+                # Single asset, don't group
+                continue
+                
+        return asset_groups
+    
+    def _get_base_filename(self, filename: str) -> str:
+        """Extract base filename without extension and common suffixes."""
+        # Remove file extension
+        base = Path(filename).stem
+        
+        # Remove common 3D mockup suffixes that might cause grouping issues
+        # But keep the meaningful part
+        base = re.sub(r'\s*\(?\d+\)?$', '', base)  # Remove trailing numbers in parentheses
+        
+        return base.strip()
+    
+    def _select_primary_asset(self, assets: List[AssetInfo]) -> AssetInfo:
+        """Select the primary asset for display (prioritize PNG > JPG > PSD)."""
+        # Priority order for display
+        priority_extensions = ['.png', '.jpg', '.jpeg', '.psd', '.ai']
+        
+        for ext in priority_extensions:
+            for asset in assets:
+                if asset.extension.lower() == ext:
+                    return asset
+        
+        # Fallback to first asset if no priority match
+        return assets[0]
 
 @dataclass
 class ScanMetadata:
@@ -201,6 +305,68 @@ class AssetIndex:
             'scan_date': self.metadata.scan_date,
             'source_directory': self.metadata.source_directory
         }
+    
+    def create_grouped_version(self) -> 'AssetIndex':
+        """
+        Create a version of this index with 3D mockups grouped by similar filenames.
+        This reduces UI clutter while preserving all asset access.
+        """
+        grouped_products = {}
+        
+        for code, product in self.products.items():
+            # Create grouped assets for this product
+            grouped_assets = []
+            ungrouped_assets = []
+            
+            # Get 3D mockup groups
+            mockup_groups = product.group_3d_mockups()
+            
+            # Track which assets are already grouped
+            grouped_asset_names = set()
+            for group in mockup_groups:
+                for asset in group.related_assets:
+                    grouped_asset_names.add(asset.name)
+            
+            # Add grouped 3D mockups
+            for group in mockup_groups:
+                # Convert AssetGroup to a dict that looks like AssetInfo for UI compatibility
+                group_dict = group.to_dict()
+                # Add fields that UI expects from AssetInfo
+                group_dict.update({
+                    'name': group.primary_asset.name,
+                    'path': group.primary_asset.path,
+                    'relative_path': group.primary_asset.relative_path,
+                    'extension': group.primary_asset.extension,
+                    'size': sum(asset.size for asset in group.related_assets),
+                    'modified': group.primary_asset.modified
+                })
+                grouped_assets.append(group_dict)
+            
+            # Add all non-3D-mockup assets and ungrouped 3D mockups
+            for asset in product.assets:
+                if asset.name not in grouped_asset_names:
+                    ungrouped_assets.append(asset)
+            
+            # Create new product with mixed grouped and ungrouped assets
+            grouped_products[code] = ProductInfo(
+                code=product.code,
+                name=product.name,
+                category=product.category,
+                folder_path=product.folder_path,
+                directory_source=product.directory_source,
+                product_line=product.product_line,
+                status=product.status,
+                assets=ungrouped_assets  # Keep ungrouped as AssetInfo objects
+            )
+            
+            # Store grouped info separately for UI processing
+            grouped_products[code]._grouped_assets = grouped_assets
+        
+        # Create new index with grouped data
+        return AssetIndex(
+            metadata=self.metadata,
+            products=grouped_products
+        )
 
 # Utility functions for data validation and processing
 

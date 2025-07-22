@@ -127,7 +127,23 @@ class AssetScanner:
         self.logger.info(f"Multi-directory scan completed in {scan_duration:.2f} seconds")
         self.logger.info(f"Total: {metadata.total_products} products with {metadata.total_assets} assets")
         
-        return AssetIndex(metadata=metadata, products=all_products)
+        # Create the base index
+        asset_index = AssetIndex(metadata=metadata, products=all_products)
+        
+        # Create grouped version for better UI experience
+        self.logger.info("Creating smart-grouped version for UI...")
+        grouped_index = asset_index.create_grouped_version()
+        
+        # Log grouping statistics
+        original_3d_count = sum(1 for p in all_products.values() 
+                               for a in p.assets if a.type == '3D Mockup')
+        grouped_3d_count = sum(len(getattr(p, '_grouped_assets', [])) for p in grouped_index.products.values())
+        remaining_3d_count = sum(1 for p in grouped_index.products.values() 
+                                for a in p.assets if a.type == '3D Mockup')
+        
+        self.logger.info(f"Smart grouping: {original_3d_count} 3D mockups → {grouped_3d_count} groups + {remaining_3d_count} individual")
+        
+        return grouped_index
     
     def _scan_single_directory(self, directory: Path, dir_key: str) -> Dict[str, ProductInfo]:
         """Scan a single directory and return products."""

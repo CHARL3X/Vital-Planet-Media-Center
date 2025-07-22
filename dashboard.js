@@ -345,9 +345,17 @@ class PackagingDashboard {
             return;
         }
 
+        // Combine regular assets with grouped assets
+        const allAssets = [...assets];
+        
+        // Add grouped assets from product (if any)
+        if (this.currentProduct && this.currentProduct._grouped_assets) {
+            allAssets.push(...this.currentProduct._grouped_assets);
+        }
+
         // Group assets by type
         const groupedAssets = {};
-        assets.forEach(asset => {
+        allAssets.forEach(asset => {
             if (!groupedAssets[asset.type]) {
                 groupedAssets[asset.type] = [];
             }
@@ -355,9 +363,19 @@ class PackagingDashboard {
         });
 
         const html = Object.entries(groupedAssets).map(([type, typeAssets]) => {
+            // Count individual assets vs grouped assets
+            const groupedCount = typeAssets.filter(a => a.is_grouped).length;
+            const individualCount = typeAssets.length - groupedCount;
+            const totalItems = typeAssets.length;
+            
+            // Show meaningful count in header
+            const countDisplay = groupedCount > 0 ? 
+                `${totalItems} items (${groupedCount} grouped)` : 
+                `${totalItems}`;
+                
             return `
                 <div class="asset-type-group">
-                    <h3 class="asset-type-header">${type} (${typeAssets.length})</h3>
+                    <h3 class="asset-type-header">${type} (${countDisplay})</h3>
                     ${typeAssets.map(asset => this.createAssetItem(asset)).join('')}
                 </div>
             `;
@@ -367,6 +385,12 @@ class PackagingDashboard {
     }
 
     createAssetItem(asset) {
+        // Check if this is a grouped asset
+        if (asset.is_grouped) {
+            return this.createGroupedAssetItem(asset);
+        }
+        
+        // Regular single asset item
         const fileSize = this.formatFileSize(asset.size);
         const modDate = asset.modified ? new Date(asset.modified).toLocaleDateString() : 'Unknown';
         const fileExt = asset.extension.replace('.', '').toLowerCase();
@@ -416,6 +440,95 @@ class PackagingDashboard {
                 </div>
             </div>
         `;
+    }
+
+    createGroupedAssetItem(asset) {
+        const fileSize = this.formatFileSize(asset.size);
+        const modDate = asset.modified ? new Date(asset.modified).toLocaleDateString() : 'Unknown';
+        const primaryExt = asset.extension.replace('.', '').toLowerCase();
+        const isImage = ['png', 'jpg', 'jpeg', 'gif'].includes(primaryExt);
+        
+        // Create unique ID for this group
+        const groupId = `group_${asset.base_name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        
+        return `
+            <div class="asset-item grouped-asset" data-file-type="${primaryExt}">
+                <div class="asset-info">
+                    <div class="asset-name">
+                        <span class="file-icon">🖼️</span>
+                        ${asset.base_name}
+                        <span class="group-badge">${asset.total_assets} formats</span>
+                    </div>
+                    <div class="asset-meta">
+                        <span class="asset-type">${asset.type}</span>
+                        <span class="format-badges">
+                            ${asset.available_formats.map(format => 
+                                `<span class="file-type-badge format-${format.toLowerCase()}">${format}</span>`
+                            ).join('')}
+                        </span>
+                        <span>Total Size: ${fileSize}</span>
+                        <span>Modified: ${modDate}</span>
+                    </div>
+                </div>
+                <div class="asset-actions">
+                    ${isImage ? `
+                        <button class="btn btn-small btn-primary" onclick="dashboard.previewImage('${asset.path}', '${asset.name}')">
+                            Preview
+                        </button>
+                    ` : ''}
+                    <div class="dropdown">
+                        <button class="btn btn-small dropdown-toggle" onclick="dashboard.toggleDownloadOptions('${groupId}')">
+                            Download ▼
+                        </button>
+                        <div class="dropdown-menu" id="${groupId}">
+                            ${asset.available_formats.map(format => {
+                                const formatAsset = asset.related_assets.find(a => 
+                                    a.extension.replace('.', '').toUpperCase() === format);
+                                const formatType = format === 'PSD' ? 'Project File' : 
+                                                 format === 'PNG' ? 'Image' : 'Image';
+                                return formatAsset ? `
+                                    <button class="dropdown-item" onclick="dashboard.downloadFile('${formatAsset.path}', '${formatAsset.name}')">
+                                        ${format} (${formatType})
+                                    </button>
+                                ` : '';
+                            }).join('')}
+                        </div>
+                    </div>
+                    <button class="btn btn-small" onclick="dashboard.openInFinder('${asset.path}')">
+                        Open
+                    </button>
+                    <button class="btn btn-small" onclick="dashboard.copyPath('${asset.path}')">
+                        Copy Path
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    toggleDownloadOptions(groupId) {
+        const dropdown = document.getElementById(groupId);
+        const isVisible = dropdown.style.display === 'block';
+        
+        // Hide all other dropdowns first
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+        
+        // Toggle this dropdown
+        dropdown.style.display = isVisible ? 'none' : 'block';
+        
+        // Close dropdown when clicking outside
+        if (!isVisible) {
+            setTimeout(() => {
+                const clickOutside = (e) => {
+                    if (!dropdown.contains(e.target) && !e.target.classList.contains('dropdown-toggle')) {
+                        dropdown.style.display = 'none';
+                        document.removeEventListener('click', clickOutside);
+                    }
+                };
+                document.addEventListener('click', clickOutside);
+            }, 100);
+        }
     }
 
     openInFinder(path) {
