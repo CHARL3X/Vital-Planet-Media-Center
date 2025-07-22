@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VP Timeline - Vital Planet Packaging Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">VP Timeline</h1>
+            <div class="navigation-controls">
+                <div class="nav-toggles">
+                    <div class="toggle-group">
+                        <a href="/" class="btn">← Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+            <div class="stats" id="timelineStats">
+                <span id="totalEvents">0 Events</span>
+                <span id="dateRange">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Timeline Filters -->
+            <div class="controls">
+                <div class="search-section">
+                    <input type="text" id="timelineSearch" placeholder="Search assets, products, or file names..." class="search-input">
+                    <button id="clearTimelineSearch" class="clear-btn">Clear</button>
+                </div>
+                
+                <div class="filter-section">
+                    <label>Date Range:</label>
+                    <select id="dateRangeFilter" class="filter-select">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="week" selected>This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="quarter">This Quarter</option>
+                        <option value="year">This Year</option>
+                    </select>
+                    
+                    <label>Product Line:</label>
+                    <select id="productLineFilter" class="filter-select">
+                        <option value="all">All Lines</option>
+                        <option value="Human">Human</option>
+                        <option value="Pet">Pet</option>
+                    </select>
+
+                    <label>Asset Type:</label>
+                    <select id="assetTypeFilter" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="3D Mockup">3D Mockups</option>
+                        <option value="Box Art">Box Art</option>
+                        <option value="Label Art">Label Art</option>
+                        <option value="Print Ready">Print Ready</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label>Status:</label>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">All Status</option>
+                        <option value="Current">Current</option>
+                        <option value="Work in Progress">WIP</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="timelineLoading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading timeline data...</p>
+            </div>
+
+            <!-- Timeline Content -->
+            <div id="timelineContent" class="timeline-content" style="display: none;">
+                <div id="timelineEvents" class="timeline-events"></div>
+                <div id="noTimelineResults" class="no-results" style="display: none;">
+                    <h3>No events found</h3>
+                    <p>Try adjusting your search or filters</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="timeline.js"></script>
+</body>
+</html>

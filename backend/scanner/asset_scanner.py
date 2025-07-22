@@ -16,6 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # Import our modules
 from .data_models import AssetInfo, ProductInfo, ScanMetadata, AssetIndex
 from .file_analyzer import FileAnalyzer
+from .temporal_analyzer import TemporalAnalyzer
 from ..config.settings import settings
 
 class AssetScanner:
@@ -27,6 +28,7 @@ class AssetScanner:
         self.source_dir = self._get_source_directory()
         self.output_file = output_file or "assets_index.json"
         self.analyzer = FileAnalyzer()
+        self.temporal_analyzer = TemporalAnalyzer()
         
         # Track which directories we're scanning
         self.scan_directories = []
@@ -271,7 +273,7 @@ class AssetScanner:
                     asset_type, is_current = self.analyzer.classify_asset(file_path, directory)
                     
                     if asset_type != "Excluded":
-                        asset_info = AssetInfo.from_file(file_path, directory, asset_type, is_current)
+                        asset_info = AssetInfo.from_file(file_path, directory, asset_type, is_current, self.temporal_analyzer)
                         assets.append(asset_info)
             
             self.stats['files_scanned'] += file_count

@@ -22,6 +22,11 @@ class AssetInfo:
     extension: str
     size: int
     modified: Optional[str] = None
+    # Enhanced temporal data
+    activity_score: Optional[float] = None
+    is_recent_work: Optional[bool] = None
+    filename_dates: Optional[List[Dict[str, Any]]] = None
+    best_project_date: Optional[Dict[str, Any]] = None
     
     def __post_init__(self):
         """Post-initialization processing."""
@@ -33,10 +38,29 @@ class AssetInfo:
         return asdict(self)
     
     @classmethod
-    def from_file(cls, file_path: Path, base_path: Path, asset_type: str, is_current: bool) -> 'AssetInfo':
-        """Create AssetInfo from file path."""
+    def from_file(cls, file_path: Path, base_path: Path, asset_type: str, is_current: bool, temporal_analyzer=None) -> 'AssetInfo':
+        """Create AssetInfo from file path with enhanced temporal analysis."""
         try:
             stat = file_path.stat()
+            modified_time = datetime.fromtimestamp(stat.st_mtime)
+            
+            # Enhanced temporal analysis if analyzer is provided
+            activity_score = None
+            is_recent_work = None
+            filename_dates = None
+            best_project_date = None
+            
+            if temporal_analyzer:
+                try:
+                    temporal_data = temporal_analyzer.analyze_file_activity(file_path)
+                    activity_score = temporal_data.get('activity_score')
+                    is_recent_work = temporal_data.get('is_recent_work')
+                    filename_dates = temporal_data.get('filename_dates')
+                    best_project_date = temporal_data.get('best_project_date')
+                except Exception as e:
+                    # Don't fail asset creation if temporal analysis fails
+                    pass
+            
             return cls(
                 name=file_path.name,
                 path=str(file_path),
@@ -45,7 +69,11 @@ class AssetInfo:
                 is_current=is_current,
                 extension=file_path.suffix.lower(),
                 size=stat.st_size,
-                modified=datetime.fromtimestamp(stat.st_mtime).isoformat()
+                modified=modified_time.isoformat(),
+                activity_score=activity_score,
+                is_recent_work=is_recent_work,
+                filename_dates=filename_dates,
+                best_project_date=best_project_date
             )
         except (OSError, ValueError) as e:
             # Handle files that can't be accessed

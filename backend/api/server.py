@@ -9,6 +9,7 @@ import sys
 import subprocess
 import signal
 import time
+from datetime import datetime
 from pathlib import Path
 from flask import Flask, jsonify, send_from_directory, request, send_file, abort
 from urllib.parse import unquote
@@ -50,6 +51,14 @@ def index():
         return send_from_directory(str(PROJECT_ROOT), 'index.html')
     except Exception as e:
         return f"Error serving index.html: {e}", 500
+
+@app.route('/timeline')
+def timeline():
+    """Serve the timeline page."""
+    try:
+        return send_from_directory(str(PROJECT_ROOT), 'timeline.html')
+    except Exception as e:
+        return f"Error serving timeline.html: {e}", 500
 
 @app.route('/styles.css')
 def serve_css():
@@ -271,6 +280,103 @@ def health_check():
         'index_exists': index_exists,
         'project_root': str(PROJECT_ROOT)
     })
+
+@app.route('/api/timeline')
+def get_timeline():
+    """Get timeline data showing chronological asset activity."""
+    try:
+        index_path = PROJECT_ROOT / 'assets_index.json'
+        if not index_path.exists():
+            return jsonify({'error': 'No data available'}), 404
+        
+        with open(index_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        products = data.get('products', {})
+        timeline_events = []
+        
+        # Extract all asset modification events with enhanced temporal data
+        for product_code, product in products.items():
+            for asset in product.get('assets', []):
+                if asset.get('modified'):
+                    # Determine the most meaningful timestamp for this asset
+                    primary_date = asset['modified']  # Default to filesystem date
+                    date_source = 'filesystem'
+                    
+                    # If we have high-confidence filename date, consider using it
+                    if (asset.get('best_project_date') and 
+                        asset['best_project_date'].get('confidence', 0) > 0.8):
+                        # Only use filename date if it's very recent or filesystem date is old
+                        fs_date = datetime.fromisoformat(asset['modified'].replace('Z', '+00:00'))
+                        days_old = (datetime.now() - fs_date).days
+                        if days_old > 90:  # If filesystem date is old, filename might be better
+                            primary_date = asset['best_project_date']['date']
+                            date_source = f"filename ({asset['best_project_date']['pattern_type']})"
+                    
+                    timeline_events.append({
+                        'date': primary_date,
+                        'date_source': date_source,
+                        'product_code': product_code,
+                        'product_name': product['name'],
+                        'product_line': product.get('product_line', 'Human'),
+                        'status': product.get('status', 'Current'),
+                        'asset_name': asset['name'],
+                        'asset_type': asset['type'],
+                        'file_extension': asset.get('extension', ''),
+                        'file_size': asset.get('size', 0),
+                        'is_current': asset.get('is_current', True),
+                        'relative_path': asset.get('relative_path', ''),
+                        'full_path': asset.get('path', ''),
+                        # Enhanced temporal data
+                        'activity_score': asset.get('activity_score', 0),
+                        'is_recent_work': asset.get('is_recent_work', False),
+                        'filesystem_date': asset['modified'],
+                        'filename_dates': asset.get('filename_dates', []),
+                        'best_project_date': asset.get('best_project_date')
+                    })
+        
+        # Sort by date (newest first)
+        timeline_events.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Add grouped assets if they exist
+        for product_code, product in products.items():
+            grouped_assets = product.get('_grouped_assets', [])
+            for group in grouped_assets:
+                if group.get('modified'):
+                    timeline_events.append({
+                        'date': group['modified'],
+                        'product_code': product_code,
+                        'product_name': product['name'],
+                        'product_line': product.get('product_line', 'Human'),
+                        'status': product.get('status', 'Current'),
+                        'asset_name': group.get('base_name', group.get('name', 'Grouped Asset')),
+                        'asset_type': group.get('type', group.get('asset_type', 'Unknown')),
+                        'file_extension': group.get('extension', ''),
+                        'file_size': group.get('size', 0),
+                        'is_current': group.get('is_current', True),
+                        'relative_path': group.get('relative_path', ''),
+                        'full_path': group.get('path', ''),
+                        'is_grouped': True,
+                        'total_assets': group.get('total_assets', 0),
+                        'available_formats': group.get('available_formats', [])
+                    })
+        
+        # Re-sort after adding grouped assets
+        timeline_events.sort(key=lambda x: x['date'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'total_events': len(timeline_events),
+            'events': timeline_events,
+            'scan_date': data.get('metadata', {}).get('scan_date')
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to generate timeline',
+            'message': str(e)
+        }), 500
 
 # Error handlers
 @app.errorhandler(404)
