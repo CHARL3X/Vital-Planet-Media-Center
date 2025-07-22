@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vital Planet Packaging Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhancements.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">VP Packaging Dashboard</h1>
+            <div class="navigation-controls">
+                <div class="nav-toggles">
+                    <div class="toggle-group">
+                        <label>Product Line:</label>
+                        <div class="toggle-buttons" id="productLineToggle">
+                            <button class="toggle-btn active" data-line="human">🧑 Human</button>
+                            <button class="toggle-btn" data-line="pet">🐕 Pet</button>
+                            <button class="toggle-btn" data-line="both">🌍 Both</button>
+                        </div>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Status:</label>
+                        <div class="toggle-buttons" id="statusToggle">
+                            <button class="toggle-btn active" data-status="current">✅ Current</button>
+                            <button class="toggle-btn" data-status="wip">🔨 WIP</button>
+                            <button class="toggle-btn" data-status="all">📁 All</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="stats" id="stats">
+                <span id="totalProducts">0 Products</span>
+                <span id="totalAssets">0 Assets</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Search and Filters -->
+            <div class="controls">
+                <div class="search-section">
+                    <input type="text" id="searchInput" placeholder="Search by product code or name..." class="search-input">
+                    <button id="clearSearch" class="clear-btn">Clear</button>
+                </div>
+                
+                <div class="filter-section">
+                    <label>Category:</label>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="all">All Categories</option>
+                        <option value="Vital Flora FG">Vital Flora FG</option>
+                        <option value="Vital Flora SS">Vital Flora SS</option>
+                        <option value="IntenseCare FG">IntenseCare FG</option>
+                        <option value="IntenseCare SS">IntenseCare SS</option>
+                        <option value="Digestive Health">Digestive Health</option>
+                        <option value="Organic Flora">Organic Flora</option>
+                        <option value="Amazon Kits">Amazon Kits</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    
+                    <label>Asset Type:</label>
+                    <select id="assetTypeFilter" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="3D Mockup">3D Mockups</option>
+                        <option value="Box Art">Box Art</option>
+                        <option value="Label Art">Label Art</option>
+                        <option value="Print Ready">Print Ready</option>
+                        <option value="Archive">Archive</option>
+                        <option value="Template">Templates</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label>File Type:</label>
+                    <select id="fileTypeFilter" class="filter-select">
+                        <option value="all">All Files</option>
+                        <option value="png">PNG Images</option>
+                        <option value="jpg">JPG Images</option>
+                        <option value="ai">Adobe Illustrator</option>
+                        <option value="psd">Photoshop</option>
+                        <option value="pdf">PDF Files</option>
+                        <option value="other">Other Files</option>
+                    </select>
+                    
+                    <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading packaging assets...</p>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="productsGrid" class="products-grid"></div>
+        </div>
+    </main>
+
+    <!-- Asset Detail Modal -->
+    <div id="assetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Product Assets</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="asset-tabs">
+                    <button class="tab-btn active" data-tab="current">Current</button>
+                    <button class="tab-btn" data-tab="archive">Archive</button>
+                    <button class="tab-btn" data-tab="all">All Assets</button>
+                </div>
+                <div id="assetsList" class="assets-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

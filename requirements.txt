@@ -1,0 +1,31 @@
+# Vital Planet Asset Hub - Python 3.13 Compatible Dependencies
+
+# Core Framework
+Flask>=3.0.0
+Werkzeug>=3.0.0
+
+# File Handling
+watchdog>=3.0.0
+
+# JSON and Data Processing (Python 3.13 compatible versions)
+# Removing pandas - not needed for basic file operations
+
+# Logging and Monitoring
+colorama>=0.4.6
+
+# Testing (optional)
+pytest>=7.4.2
+pytest-cov>=4.1.0
+
+# Development Tools (optional)
+black>=23.7.0
+flake8>=6.0.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Cross-platform compatibility
+psutil>=5.9.5
+
+# Optional: Performance monitoring
+memory-profiler>=0.61.0
