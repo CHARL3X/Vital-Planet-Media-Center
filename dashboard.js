@@ -407,11 +407,25 @@ class PackagingDashboard {
             return icons[ext] || '📄';
         };
         
+        // Create thumbnail if it's an image
+        const thumbnailHtml = isImage ? 
+            `<div class="asset-thumbnail">
+                <img src="/api/thumbnail?path=${encodeURIComponent(asset.path)}&size=64" 
+                     alt="${asset.name}" 
+                     style="width: 64px; height: 64px; object-fit: cover; border-radius: 4px; cursor: pointer;"
+                     onclick="dashboard.previewImage('${asset.path}', '${asset.name}')"
+                     onerror="this.style.display='none'; this.parentElement.querySelector('.file-icon').style.display='inline';">
+                <span class="file-icon" style="display: none;">${getFileIcon(fileExt)}</span>
+            </div>` : 
+            `<div class="asset-thumbnail">
+                <span class="file-icon">${getFileIcon(fileExt)}</span>
+            </div>`;
+        
         return `
             <div class="asset-item" data-file-type="${fileExt}">
+                ${thumbnailHtml}
                 <div class="asset-info">
                     <div class="asset-name">
-                        <span class="file-icon">${getFileIcon(fileExt)}</span>
                         ${asset.name}
                     </div>
                     <div class="asset-meta">
@@ -532,18 +546,28 @@ class PackagingDashboard {
     }
 
     openInFinder(path) {
-        // This requires a local server or electron app to work properly
-        console.log('Open in Finder:', path);
+        // Try to open file via server endpoint
+        console.log('Open file:', path);
         
-        // For web browsers, we can try to open the file directly
-        // This will work if the files are accessible via web server
-        if (path.endsWith('.pdf') || path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-            const fileUrl = 'file://' + encodeURI(path);
-            window.open(fileUrl, '_blank');
-        } else {
-            // Show path to user so they can navigate manually
+        try {
+            if (path.endsWith('.pdf') || path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+                // Open images and PDFs in new tab
+                const fileUrl = `/api/file?path=${encodeURIComponent(path)}`;
+                window.open(fileUrl, '_blank');
+            } else {
+                // For other files, trigger download
+                this.downloadFile(path, path.split('/').pop());
+            }
+        } catch (error) {
+            console.error('Failed to open file:', error);
             this.showPathModal(path);
         }
+    }
+    
+    revealInFinder(path) {
+        // Show the file location to user
+        console.log('Reveal in Finder:', path);
+        this.showPathModal(path);
     }
 
     showPathModal(path) {
@@ -579,12 +603,13 @@ class PackagingDashboard {
     downloadFile(path, filename) {
         console.log('Download requested:', filename);
         
-        // For security reasons, browsers can't directly access local files
-        // But we can create a link that attempts to open/download the file
         try {
+            // Use server endpoint to download file
+            const downloadUrl = `/api/download?path=${encodeURIComponent(path)}`;
+            
             // Create a temporary download link
             const link = document.createElement('a');
-            link.href = 'file://' + encodeURI(path);
+            link.href = downloadUrl;
             link.download = filename;
             link.style.display = 'none';
             
@@ -595,8 +620,7 @@ class PackagingDashboard {
             this.showToast(`Download initiated: ${filename}`, 'success');
         } catch (error) {
             console.error('Download failed:', error);
-            // Fallback - show the path for manual access
-            this.showPathModal(path, 'Download File');
+            this.showToast('Download failed. Please try again.', 'error');
         }
     }
 
@@ -606,6 +630,10 @@ class PackagingDashboard {
         // Create image preview modal
         const modal = document.createElement('div');
         modal.className = 'modal';
+        
+        // Use server endpoint to serve the image
+        const imageUrl = `/api/file?path=${encodeURIComponent(path)}`;
+        
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 90%; max-height: 90%;">
                 <div class="modal-header">
@@ -614,20 +642,20 @@ class PackagingDashboard {
                 </div>
                 <div style="padding: 2rem; text-align: center;">
                     <div style="margin-bottom: 1rem;">
-                        <img src="file://${encodeURI(path)}" 
+                        <img src="${imageUrl}" 
                              alt="${filename}" 
                              style="max-width: 100%; max-height: 70vh; border: 1px solid #ddd; border-radius: 8px;"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <div style="display: none; padding: 2rem; color: #666;">
-                            <p>Unable to preview image directly in browser.</p>
+                            <p>Unable to preview image.</p>
                             <p style="margin-top: 1rem;">File location:</p>
                             <code style="background: #f5f5f5; padding: 1rem; border-radius: 4px; display: block; margin: 1rem 0; word-break: break-all;">${path}</code>
-                            <button class="btn btn-primary" onclick="dashboard.openInFinder('${path}')">Open in Finder</button>
+                            <button class="btn btn-primary" onclick="dashboard.revealInFinder('${path}')">Open in Finder</button>
                         </div>
                     </div>
                     <div class="asset-actions" style="justify-content: center;">
                         <button class="btn" onclick="dashboard.downloadFile('${path}', '${filename}')">Download</button>
-                        <button class="btn" onclick="dashboard.openInFinder('${path}')">Open in App</button>
+                        <button class="btn" onclick="dashboard.revealInFinder('${path}')">Open in Finder</button>
                         <button class="btn" onclick="dashboard.copyPath('${path}')">Copy Path</button>
                     </div>
                 </div>

@@ -6,8 +6,14 @@ Web server for the asset dashboard.
 import os
 import json
 import sys
+import subprocess
+import signal
+import time
 from pathlib import Path
-from flask import Flask, jsonify, send_from_directory, request
+from flask import Flask, jsonify, send_from_directory, request, send_file, abort
+from urllib.parse import unquote
+from PIL import Image
+import io
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -95,6 +101,8 @@ def get_config_info():
         'accent_color': config.ACCENT_COLOR
     })
 
+@app.route('/refresh-assets', methods=['POST'])
+@app.route('/api/refresh-assets', methods=['POST'])
 @app.route('/api/scan', methods=['POST'])
 def trigger_scan():
     """Trigger a new asset scan with multi-directory support."""
@@ -163,6 +171,95 @@ def get_stats():
             'message': str(e)
         }), 500
 
+@app.route('/api/file')
+def serve_file():
+    """Serve files from local filesystem."""
+    file_path = request.args.get('path')
+    if not file_path:
+        return jsonify({'error': 'No file path provided'}), 400
+    
+    try:
+        # Decode the path
+        file_path = unquote(file_path)
+        
+        # Security check - ensure file exists and is accessible
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 404
+        
+        # Send the file
+        return send_file(file_path)
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to serve file: {str(e)}'}), 500
+
+@app.route('/api/thumbnail')
+def serve_thumbnail():
+    """Generate and serve thumbnails for images."""
+    file_path = request.args.get('path')
+    size = int(request.args.get('size', 200))
+    
+    if not file_path:
+        return jsonify({'error': 'No file path provided'}), 400
+    
+    try:
+        # Decode the path
+        file_path = unquote(file_path)
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 404
+        
+        # Check if it's an image file
+        if not file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp')):
+            return jsonify({'error': 'File is not an image'}), 400
+        
+        # Generate thumbnail
+        with Image.open(file_path) as img:
+            # Convert RGBA to RGB if necessary
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
+            
+            # Create thumbnail
+            img.thumbnail((size, size), Image.Resampling.LANCZOS)
+            
+            # Save to bytes
+            img_io = io.BytesIO()
+            img.save(img_io, 'JPEG', quality=85)
+            img_io.seek(0)
+            
+            return send_file(img_io, mimetype='image/jpeg')
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to generate thumbnail: {str(e)}'}), 500
+
+@app.route('/api/download')
+def download_file():
+    """Download files with proper headers."""
+    file_path = request.args.get('path')
+    if not file_path:
+        return jsonify({'error': 'No file path provided'}), 400
+    
+    try:
+        # Decode the path
+        file_path = unquote(file_path)
+        
+        # Security check
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 404
+        
+        # Get filename
+        filename = os.path.basename(file_path)
+        
+        # Send file as download
+        return send_file(file_path, as_attachment=True, download_name=filename)
+        
+    except Exception as e:
+        return jsonify({'error': f'Download failed: {str(e)}'}), 500
+
 @app.route('/api/health')
 def health_check():
     """Health check endpoint."""
@@ -187,9 +284,68 @@ def not_found(error):
 def internal_error(error):
     return jsonify({'error': 'Internal server error', 'message': str(error)}), 500
 
+def kill_existing_servers(port=8080):
+    """Kill any existing servers running on the specified port."""
+    try:
+        # Use lsof to find processes using the port
+        result = subprocess.run(
+            ['lsof', '-ti', f':{port}'],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        
+        if result.returncode == 0 and result.stdout.strip():
+            pids = result.stdout.strip().split('\n')
+            print(f"⚠️  Found existing processes on port {port}: {pids}")
+            
+            for pid in pids:
+                if pid.strip():
+                    try:
+                        # Try graceful kill first
+                        os.kill(int(pid), signal.SIGTERM)
+                        print(f"🛑 Sent SIGTERM to PID {pid}")
+                    except (OSError, ValueError):
+                        pass
+            
+            # Wait a moment for graceful shutdown
+            time.sleep(2)
+            
+            # Check if any processes are still running and force kill
+            result = subprocess.run(
+                ['lsof', '-ti', f':{port}'],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                remaining_pids = result.stdout.strip().split('\n')
+                print(f"🔥 Force killing remaining processes: {remaining_pids}")
+                
+                for pid in remaining_pids:
+                    if pid.strip():
+                        try:
+                            os.kill(int(pid), signal.SIGKILL)
+                            print(f"💥 Sent SIGKILL to PID {pid}")
+                        except (OSError, ValueError):
+                            pass
+            
+            print(f"✅ Port {port} cleared successfully")
+        else:
+            print(f"✅ Port {port} is available")
+            
+    except Exception as e:
+        print(f"⚠️  Warning: Could not check/clear port {port}: {e}")
+        print("Continuing with server startup...")
+
 def main():
     """Main server entry point."""
     print(f"🌱 Starting {config.APP_NAME} v{config.VERSION}")
+    
+    # Auto-kill existing servers on the port
+    kill_existing_servers(config.PORT)
+    
     print(f"🏠 Company: {config.COMPANY}")
     print(f"📂 Project Root: {PROJECT_ROOT}")
     print(f"🌐 Server: http://{config.HOST}:{config.PORT}")

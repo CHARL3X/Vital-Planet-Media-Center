@@ -1,0 +1,64 @@
+🌱 Starting Vital Planet Asset Hub v1.0.0
+✅ Port 8080 is available
+🏠 Company: Vital Planet
+📂 Project Root: /Users/MKTG018/Desktop/Cloud Dashboard
+🌐 Server: http://localhost:8080
+🎨 Theme: #732d83
+✅ index.html: /Users/MKTG018/Desktop/Cloud Dashboard/index.html
+✅ styles.css: /Users/MKTG018/Desktop/Cloud Dashboard/styles.css
+✅ dashboard.js: /Users/MKTG018/Desktop/Cloud Dashboard/dashboard.js
+✅ assets_index.json: /Users/MKTG018/Desktop/Cloud Dashboard/assets_index.json
+ * Serving Flask app 'server'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://localhost:8080
+Press CTRL+C to quit
+127.0.0.1 - - [22/Jul/2025 13:43:20] "GET /api/health HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:43:34] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Human/Current/13000-Flora%20Bird/Links/Flora%20Bird_Bird%201.jpg&size=64 HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jul/2025 13:44:01] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2025 13:44:01] "GET /styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:01] "GET /enhancements.css HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jul/2025 13:44:01] "GET /dashboard.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:01] "GET /assets_index.json HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:03] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2025 13:44:04] "GET /styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2025 13:44:04] "GET /enhancements.css HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jul/2025 13:44:04] "GET /dashboard.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2025 13:44:04] "GET /assets_index.json HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:09] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/Links/thumbnail_Flora%20Bird%20UPC.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:09] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/Links/Flora%20Bird_Bird%201.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:15] "GET /api/file?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/Links/thumbnail_Flora%20Bird%20UPC.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:21] "GET /api/download?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/Links/thumbnail_Flora%20Bird%20UPC.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:34] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13100%20Horse%20Gut%20Renew%20Label/Links/13100%20Horse%20Gut%20Renew%20UPC%20(sbralic@vitalplanet.com).png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:34] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13100%20Horse%20Gut%20Renew%20Label/Links/13100%20Horse%20Gut%20Renew%20UPC.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:35] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13100%20Horse%20Gut%20Renew%20Label/Links/Horse_GRN2.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:36] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13100%20Horse%20Gut%20Renew%20Label/Links/Horse_GRN2%20(sbralic@vitalplanet.com).jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:41] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14004_Alaskan_Omega_60ct/Amazon/14004_Alaskan%20Omega%2060ct_Amazon/14004_Alaskan%20Omega%2060ct_GA.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:42] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14004_Alaskan_Omega_60ct/Amazon/14004_Alaskan%20Omega%2060ct_Amazon/14004_Alaskan%20Omega%2060ct_HR.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:44:55] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Human/Current/19235%20Vital%20Gut%20Renew%20Box%20and%20Stick/19235-B%20Vital%20Gut%20Renew-Stick%20Pack%20Box/Links/VGR%20Main%20Images%20For%20Web/VGR%20Stick%20Pack-For%20Web.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:07] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2025 13:45:07] "GET /enhancements.css HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jul/2025 13:45:07] "GET /styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2025 13:45:07] "GET /dashboard.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2025 13:45:07] "GET /assets_index.json HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:10] "POST /refresh-assets HTTP/1.1" 405 -
+127.0.0.1 - - [22/Jul/2025 13:45:13] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/Links/thumbnail_Flora%20Bird%20UPC.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:13] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/Links/Flora%20Bird_Bird%201.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:17] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/3D%20Mockups,%20Images,%20Flatbacks,%20Other%20Related/Old%20Version/Flora%20Bird%20canister_Supp%20Facts.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:17] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/3D%20Mockups,%20Images,%20Flatbacks,%20Other%20Related/Old%20Version/Flora%20Bird%20canister_Left.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:17] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/3D%20Mockups,%20Images,%20Flatbacks,%20Other%20Related/Old%20Version/Flora%20Bird%20canister_Front.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:17] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/Links/thumbnail_Flora%20Bird%20UPC.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:18] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/Links/thumbnail_Flora%20Bird%20UPC%20(sbralic@vitalplanet.com).png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:18] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/3D%20Mockups,%20Images,%20Flatbacks,%20Other%20Related/Old%20Version/Flora%20Bird%20canister_Right.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:18] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/Links/Flora%20Bird_Bird%201%20(sbralic@vitalplanet.com).jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:18] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/13000_Flora%20Bird_Powder%20Label/OLD%20VERSIONS%20(DRAFTS)/Archive/13000L%20Flora%20Bird%20Powder%20Label%2009-20/Links/Flora%20Bird_Bird%201.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:32] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002L_Sensitive%20Stomach%20Tabs%20Label_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002L%20Sensitive%20Stomach%20Tabs%20Label%2005-22/Links/25144583_l.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:32] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002B_Sensitive%20Stomach%20Tabs%20Box_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002B%20Sensitive%20Stomach%20Tabs%20Box%2005-22/LInks/42671458_l.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:32] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002B_Sensitive%20Stomach%20Tabs%20Box_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002B%20Sensitive%20Stomach%20Tabs%20Box%2001-18/LInks/42671458_l.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:32] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002B_Sensitive%20Stomach%20Tabs%20Box_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002B%20Sensitive%20Stomach%20Tabs%20Box%2001-18/LInks/FD%20Powder%20v12-17.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:33] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002B_Sensitive%20Stomach%20Tabs%20Box_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002B%20Sensitive%20Stomach%20Tabs%20Box%2005-22/LInks/FD%20Powder%20v12-17.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:33] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002L_Sensitive%20Stomach%20Tabs%20Label_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002L%20Sensitive%20Stomach%20Tabs%20Label%2005-22/Links/FD%20Powder%20v12-17.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:33] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002L_Sensitive%20Stomach%20Tabs%20Label_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002L%20Sensitive%20Stomach%20Tabs%20Label%2005-22/Links/42671458_l.jpg&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:33] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/14002L_Sensitive%20Stomach%20Tabs%20Label_V.03.24/OLD%20VERSIONS%20(DRAFTS)/Archive/14002L%20Sensitive%20Stomach%20Tabs%20Label%2005-22/Assets%20for%20Recreation/Screen%20Shot%202022-03-28%20at%2010.30.06%20AM.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:45:35] "GET /api/thumbnail?path=/Users/MKTG018/Library/CloudStorage/OneDrive-VitalPlanet/Vital%20Planet%20Art/Packaging/VP%20PACKAGING/Pet/Current/14002_Sensitive_Stomach_Tabs/Old%20Mockups/3D%20Render/14002B%20Sensitive%20Stomach%20Tabs%20Box%2001.png&size=64 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2025 13:48:27] "POST /api/refresh-assets HTTP/1.1" 405 -

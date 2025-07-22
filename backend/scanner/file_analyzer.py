@@ -152,28 +152,36 @@ class FileAnalyzer:
         return True
     
     def _is_current_version(self, path_str: str) -> bool:
-        """Determine if this is a current version or archived."""
+        """Determine if this is a current version or archived based on VP-specific path patterns."""
         path_lower = path_str.lower()
         
-        # Files in these directories are considered archived
-        archive_indicators = [
-            'old versions', 'old mock-ups', 'old mock ups', 'old mockups',
-            'drafts', 'archive', 'backup', 'not used', 'unused',
-            'previous', 'deprecated', 'outdated', 'old links'
+        # VP-specific archive patterns - only mark as archived if in these specific paths
+        true_archive_patterns = [
+            'old versions (drafts)/archive/',
+            '/archive/',
+            'backup/',
+            'not used',
+            'unused',
+            'deprecated',
+            'outdated'
         ]
         
-        # Check if any archive indicator is in the path
-        is_archived = any(indicator in path_lower for indicator in archive_indicators)
+        # Check for true archive patterns
+        is_truly_archived = any(pattern in path_lower for pattern in true_archive_patterns)
         
-        # Files in "Print Ready" directories are definitely current
-        if 'print ready' in path_lower and not is_archived:
-            return True
-        
-        # Files with DRAFT in the name are archived unless in current directories
-        if 'draft' in path_lower:
+        if is_truly_archived:
             return False
+            
+        # Files in "Print Ready" directories are definitely current
+        if 'print ready' in path_lower:
+            return True
+            
+        # Important: "Old Mockups" directories in VP structure often contain CURRENT mockups
+        # They're just organized this way, not actually archived
+        # Only mark as archived if in the true archive patterns above
         
-        return not is_archived
+        # Everything else is considered current unless explicitly in archive paths
+        return True
     
     def _classify_asset_type(self, path_str: str, filename: str) -> str:
         """Classify the type of asset based on path and filename."""

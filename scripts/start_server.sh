@@ -56,11 +56,30 @@ fi
 PORT=${VP_PORT:-8080}
 HOST=${VP_HOST:-localhost}
 
-# Check if port is available
+# Auto-kill existing processes on the port
 if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null ; then
-    print_error "Port $PORT is already in use!"
-    print_status "Please stop the existing service or change VP_PORT in .env"
-    exit 1
+    print_warning "Port $PORT is already in use. Auto-killing existing processes..."
+    
+    # Get PIDs of processes using the port
+    EXISTING_PIDS=$(lsof -ti :$PORT 2>/dev/null || true)
+    
+    if [ ! -z "$EXISTING_PIDS" ]; then
+        print_status "Found processes: $EXISTING_PIDS"
+        
+        # Try graceful kill first
+        echo $EXISTING_PIDS | xargs kill 2>/dev/null || true
+        sleep 2
+        
+        # Check if any processes are still running
+        REMAINING_PIDS=$(lsof -ti :$PORT 2>/dev/null || true)
+        if [ ! -z "$REMAINING_PIDS" ]; then
+            print_status "Force killing remaining processes: $REMAINING_PIDS"
+            echo $REMAINING_PIDS | xargs kill -9 2>/dev/null || true
+            sleep 1
+        fi
+        
+        print_status "Port $PORT cleared successfully"
+    fi
 fi
 
 # Create PID file directory

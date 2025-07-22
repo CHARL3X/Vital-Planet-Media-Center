@@ -115,7 +115,7 @@ class ProductInfo:
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        result = {
             'code': self.code,
             'name': self.name,
             'category': self.category,
@@ -125,12 +125,18 @@ class ProductInfo:
             'status': self.status,
             'assets': [asset.to_dict() for asset in self.assets]
         }
+        
+        # Include grouped assets if they exist
+        if hasattr(self, '_grouped_assets') and self._grouped_assets:
+            result['_grouped_assets'] = self._grouped_assets
+            
+        return result
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ProductInfo':
         """Create ProductInfo from dictionary."""
         assets = [AssetInfo(**asset_data) for asset_data in data.get('assets', [])]
-        return cls(
+        product = cls(
             code=data['code'],
             name=data['name'],
             category=data['category'],
@@ -140,6 +146,12 @@ class ProductInfo:
             status=data.get('status', 'Current'),
             assets=assets
         )
+        
+        # Load grouped assets if they exist
+        if '_grouped_assets' in data:
+            product._grouped_assets = data['_grouped_assets']
+            
+        return product
     
     def get_asset_counts(self) -> Dict[str, int]:
         """Get count of assets by type."""
@@ -194,15 +206,47 @@ class ProductInfo:
         return asset_groups
     
     def _get_base_filename(self, filename: str) -> str:
-        """Extract base filename without extension and common suffixes."""
+        """Extract base filename without extension and common suffixes for VP-specific patterns."""
         # Remove file extension
         base = Path(filename).stem
         
-        # Remove common 3D mockup suffixes that might cause grouping issues
-        # But keep the meaningful part
-        base = re.sub(r'\s*\(?\d+\)?$', '', base)  # Remove trailing numbers in parentheses
+        # VP-specific grouping patterns
+        # Pattern 1: Product codes with directional suffixes (e.g., "19050-Front" → "19050")
+        if re.match(r'^\d{5}(-|_)', base):
+            # For simple product codes with directional suffixes, keep the product code
+            base = re.sub(r'\s*-\s*(Front|Back|Left|Right|Top|Bottom|Side|Label Front|Entire Label|Amazon View)$', '', base, flags=re.IGNORECASE)
+        elif re.match(r'^\d{5}[A-Z_-]', base):
+            # For complex product codes, only remove directional suffixes at the end
+            base = re.sub(r'\s*-\s*(Front|Back|Left|Right|Top|Bottom|Side|View)$', '', base, flags=re.IGNORECASE)
         
-        return base.strip()
+        # Pattern 2: Numbered versions with same base name (e.g., "P.1 LiverPURE bottle" → "LiverPURE bottle")
+        base = re.sub(r'^P\.[0-9]+\s+', '', base)
+        
+        # Pattern 3: Art codes and version numbers (e.g., "ARTM02Y25" → "")
+        base = re.sub(r'-ART[A-Z0-9]+$', '', base, flags=re.IGNORECASE)
+        
+        # Pattern 4: Remove common 3D view descriptors
+        view_patterns = [
+            r'\s*-?\s*(3-Quarter View|Quarter View|Front View|Back View|Side View)$',
+            r'\s+(in Closed Box|in Opened Box|Packets?)$',
+            r'\s*\(?[0-9]+\)?$'  # Trailing numbers in parentheses
+        ]
+        for pattern in view_patterns:
+            base = re.sub(pattern, '', base, flags=re.IGNORECASE)
+        
+        # Clean up extra spaces and dashes
+        base = re.sub(r'\s+', ' ', base).strip()
+        base = re.sub(r'-+$', '', base).strip()
+        
+        # If base is empty after cleaning, use the original product code pattern
+        if not base and re.match(r'^\d{5}', Path(filename).stem):
+            base = re.match(r'^(\d{5})', Path(filename).stem).group(1)
+        
+        # Fallback to first meaningful word if still empty
+        if not base:
+            base = Path(filename).stem.split()[0] if Path(filename).stem.split() else Path(filename).stem
+        
+        return base or 'Unknown'
     
     def _select_primary_asset(self, assets: List[AssetInfo]) -> AssetInfo:
         """Select the primary asset for display (prioritize PNG > JPG > PSD)."""
