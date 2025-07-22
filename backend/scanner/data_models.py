@@ -95,6 +95,7 @@ class AssetGroup:
             'primary_asset': self.primary_asset.to_dict(),
             'related_assets': [asset.to_dict() for asset in self.related_assets],
             'asset_type': self.asset_type,
+            'type': self.asset_type,  # UI expects 'type' field
             'is_current': self.is_current,
             'total_assets': self.total_assets,
             'available_formats': self.available_formats,
@@ -206,51 +207,28 @@ class ProductInfo:
         return asset_groups
     
     def _get_base_filename(self, filename: str) -> str:
-        """Extract base filename without extension and common suffixes for VP-specific patterns."""
-        # Remove file extension
+        """Conservative grouping: Only group files with identical base names but different extensions.
+        
+        This groups files like:
+        - 'Critical Liver Care Box.png' + 'Critical Liver Care Box.psd' + 'Critical Liver Care Box.jpg'
+        - NOT 'Front.jpg' + 'Back.jpg' (different base names)
+        """
+        # Simply return the filename without extension
+        # This ensures only IDENTICAL filenames with different extensions get grouped
         base = Path(filename).stem
         
-        # VP-specific grouping patterns
-        # Pattern 1: Product codes with directional suffixes (e.g., "19050-Front" → "19050")
-        if re.match(r'^\d{5}(-|_)', base):
-            # For simple product codes with directional suffixes, keep the product code
-            base = re.sub(r'\s*-\s*(Front|Back|Left|Right|Top|Bottom|Side|Label Front|Entire Label|Amazon View)$', '', base, flags=re.IGNORECASE)
-        elif re.match(r'^\d{5}[A-Z_-]', base):
-            # For complex product codes, only remove directional suffixes at the end
-            base = re.sub(r'\s*-\s*(Front|Back|Left|Right|Top|Bottom|Side|View)$', '', base, flags=re.IGNORECASE)
+        # Only minimal cleanup to avoid false groupings:
+        # Remove trailing numbers in parentheses like (1), (2)
+        base = re.sub(r'\s*\([0-9]+\)$', '', base)
         
-        # Pattern 2: Numbered versions with same base name (e.g., "P.1 LiverPURE bottle" → "LiverPURE bottle")
-        base = re.sub(r'^P\.[0-9]+\s+', '', base)
+        # Remove email addresses that OneDrive sometimes adds
+        base = re.sub(r'\s*\([^)]*@[^)]*\)$', '', base)
         
-        # Pattern 3: Art codes and version numbers (e.g., "ARTM02Y25" → "")
-        base = re.sub(r'-ART[A-Z0-9]+$', '', base, flags=re.IGNORECASE)
-        
-        # Pattern 4: Remove common 3D view descriptors
-        view_patterns = [
-            r'\s*-?\s*(3-Quarter View|Quarter View|Front View|Back View|Side View)$',
-            r'\s+(in Closed Box|in Opened Box|Packets?)$',
-            r'\s*\(?[0-9]+\)?$'  # Trailing numbers in parentheses
-        ]
-        for pattern in view_patterns:
-            base = re.sub(pattern, '', base, flags=re.IGNORECASE)
-        
-        # Clean up extra spaces and dashes
-        base = re.sub(r'\s+', ' ', base).strip()
-        base = re.sub(r'-+$', '', base).strip()
-        
-        # If base is empty after cleaning, use the original product code pattern
-        if not base and re.match(r'^\d{5}', Path(filename).stem):
-            base = re.match(r'^(\d{5})', Path(filename).stem).group(1)
-        
-        # Fallback to first meaningful word if still empty
-        if not base:
-            base = Path(filename).stem.split()[0] if Path(filename).stem.split() else Path(filename).stem
-        
-        return base or 'Unknown'
+        return base.strip()
     
     def _select_primary_asset(self, assets: List[AssetInfo]) -> AssetInfo:
-        """Select the primary asset for display (prioritize PNG > JPG > PSD)."""
-        # Priority order for display
+        """Select the primary asset for display (prioritize PNG > JPG > PSD for thumbnails)."""
+        # Priority order for display - PNG and JPG are best for thumbnails
         priority_extensions = ['.png', '.jpg', '.jpeg', '.psd', '.ai']
         
         for ext in priority_extensions:
@@ -375,14 +353,15 @@ class AssetIndex:
             for group in mockup_groups:
                 # Convert AssetGroup to a dict that looks like AssetInfo for UI compatibility
                 group_dict = group.to_dict()
-                # Add fields that UI expects from AssetInfo
+                # Add fields that UI expects from AssetInfo for thumbnails and display
                 group_dict.update({
                     'name': group.primary_asset.name,
                     'path': group.primary_asset.path,
                     'relative_path': group.primary_asset.relative_path,
                     'extension': group.primary_asset.extension,
                     'size': sum(asset.size for asset in group.related_assets),
-                    'modified': group.primary_asset.modified
+                    'modified': group.primary_asset.modified,
+                    'type': group.asset_type,  # Ensure type is set for UI grouping
                 })
                 grouped_assets.append(group_dict)
             

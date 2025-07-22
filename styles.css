@@ -414,6 +414,63 @@ body {
     gap: 0.5rem;
 }
 
+/* Enhanced styling for grouped assets */
+.grouped-asset {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+    border: 2px solid var(--primary-color);
+    border-left: 6px solid var(--primary-color);
+    position: relative;
+}
+
+.grouped-asset::before {
+    content: '';
+    background: url('icons/package.svg') no-repeat center;
+    background-size: 20px 20px;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0.7;
+    filter: invert(32%) sepia(35%) saturate(1654%) hue-rotate(272deg) brightness(89%) contrast(92%);
+}
+
+.grouped-asset .asset-name {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.group-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    box-shadow: 0 2px 4px rgba(115, 45, 131, 0.3);
+}
+
+.format-badges {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+}
+
+.format-badges .file-type-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.file-type-badge.format-png { background: linear-gradient(45deg, #4CAF50, #66BB6A); color: white; }
+.file-type-badge.format-jpg, .file-type-badge.format-jpeg { background: linear-gradient(45deg, #FF9800, #FFB74D); color: white; }
+.file-type-badge.format-psd { background: linear-gradient(45deg, #2196F3, #42A5F5); color: white; }
+.file-type-badge.format-ai { background: linear-gradient(45deg, #FF5722, #FF7043); color: white; }
+
 .asset-name {
     font-weight: 600;
     margin-bottom: 0.25rem;
@@ -635,8 +692,14 @@ body {
 }
 
 .asset-type-header::before {
-    content: "📁";
-    font-size: 1.2em;
+    content: '';
+    background: url('icons/folder.svg') no-repeat center;
+    background-size: 18px 18px;
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    margin-right: 8px;
+    filter: invert(1) brightness(2);
 }
 
 /* No Results State */
@@ -801,3 +864,46 @@ body {
     font-weight: 600;
     color: var(--primary-color);
 }
+
+/* Enhanced Asset Type Headers */
+.asset-type-header {
+    color: white \!important;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) \!important;
+    border: none \!important;
+    padding: 12px 20px \!important;
+    border-radius: var(--radius) \!important;
+    text-transform: uppercase \!important;
+    letter-spacing: 0.5px \!important;
+    box-shadow: 0 4px 12px rgba(115, 45, 131, 0.3) \!important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.asset-type-header:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(115, 45, 131, 0.4) \!important;
+}
+
+.asset-type-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.asset-type-header:hover::after {
+    left: 100%;
+}
+
+/* Priority indicator for 3D Mockup sections */
+.asset-type-header:contains('3D Mockup') {
+    background: linear-gradient(135deg, #FF6B35, #F7931E) \!important;
+    font-size: 1.3em \!important;
+}
+
+

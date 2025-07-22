@@ -353,33 +353,49 @@ class PackagingDashboard {
             allAssets.push(...this.currentProduct._grouped_assets);
         }
 
-        // Group assets by type
+        // Group assets by type, but handle grouped assets properly
         const groupedAssets = {};
         allAssets.forEach(asset => {
-            if (!groupedAssets[asset.type]) {
-                groupedAssets[asset.type] = [];
+            // For grouped assets, use the asset_type or type field
+            const assetType = asset.asset_type || asset.type || 'Unknown';
+            if (!groupedAssets[assetType]) {
+                groupedAssets[assetType] = [];
             }
-            groupedAssets[asset.type].push(asset);
+            groupedAssets[assetType].push(asset);
         });
 
-        const html = Object.entries(groupedAssets).map(([type, typeAssets]) => {
-            // Count individual assets vs grouped assets
-            const groupedCount = typeAssets.filter(a => a.is_grouped).length;
-            const individualCount = typeAssets.length - groupedCount;
-            const totalItems = typeAssets.length;
-            
-            // Show meaningful count in header
-            const countDisplay = groupedCount > 0 ? 
-                `${totalItems} items (${groupedCount} grouped)` : 
-                `${totalItems}`;
+        const html = Object.entries(groupedAssets)
+            .sort(([a], [b]) => {
+                // Prioritize 3D Mockup at the top
+                if (a === '3D Mockup' && b !== '3D Mockup') return -1;
+                if (b === '3D Mockup' && a !== '3D Mockup') return 1;
+                return a.localeCompare(b);
+            })
+            .map(([type, typeAssets]) => {
+                // Sort grouped assets first within each type
+                const sortedAssets = typeAssets.sort((a, b) => {
+                    if (a.is_grouped && !b.is_grouped) return -1;
+                    if (!a.is_grouped && b.is_grouped) return 1;
+                    return 0;
+                });
                 
-            return `
-                <div class="asset-type-group">
-                    <h3 class="asset-type-header">${type} (${countDisplay})</h3>
-                    ${typeAssets.map(asset => this.createAssetItem(asset)).join('')}
-                </div>
-            `;
-        }).join('');
+                // Count individual assets vs grouped assets
+                const groupedCount = typeAssets.filter(a => a.is_grouped).length;
+                const individualCount = typeAssets.length - groupedCount;
+                const totalItems = typeAssets.length;
+                
+                // Show meaningful count in header
+                const countDisplay = groupedCount > 0 ? 
+                    `${totalItems} items (${groupedCount} grouped)` : 
+                    `${totalItems}`;
+                    
+                return `
+                    <div class="asset-type-group">
+                        <h3 class="asset-type-header">${type} (${countDisplay})</h3>
+                        ${sortedAssets.map(asset => this.createAssetItem(asset)).join('')}
+                    </div>
+                `;
+            }).join('');
 
         container.innerHTML = html;
     }
@@ -396,16 +412,6 @@ class PackagingDashboard {
         const fileExt = asset.extension.replace('.', '').toLowerCase();
         const isImage = ['png', 'jpg', 'jpeg', 'gif'].includes(fileExt);
         
-        // Get file type icon
-        const getFileIcon = (ext) => {
-            const icons = {
-                'png': '🖼️', 'jpg': '🖼️', 'jpeg': '🖼️', 'gif': '🖼️',
-                'ai': '🎨', 'psd': '🖌️', 'pdf': '📄',
-                'docx': '📝', 'txt': '📝', 'indd': '📰',
-                'zip': '🗜️', 'rar': '🗜️'
-            };
-            return icons[ext] || '📄';
-        };
         
         // Create thumbnail if it's an image
         const thumbnailHtml = isImage ? 
@@ -415,10 +421,10 @@ class PackagingDashboard {
                      style="width: 64px; height: 64px; object-fit: cover; border-radius: 4px; cursor: pointer;"
                      onclick="dashboard.previewImage('${asset.path}', '${asset.name}')"
                      onerror="this.style.display='none'; this.parentElement.querySelector('.file-icon').style.display='inline';">
-                <span class="file-icon" style="display: none;">${getFileIcon(fileExt)}</span>
+                <span class="file-icon" style="display: none;">${this.getFileIcon(fileExt)}</span>
             </div>` : 
             `<div class="asset-thumbnail">
-                <span class="file-icon">${getFileIcon(fileExt)}</span>
+                <span class="file-icon">${this.getFileIcon(fileExt)}</span>
             </div>`;
         
         return `
@@ -465,11 +471,25 @@ class PackagingDashboard {
         // Create unique ID for this group
         const groupId = `group_${asset.base_name.replace(/[^a-zA-Z0-9]/g, '_')}`;
         
+        // Create thumbnail for grouped asset using primary asset
+        const thumbnailHtml = isImage ? 
+            `<div class="asset-thumbnail">
+                <img src="/api/thumbnail?path=${encodeURIComponent(asset.path)}&size=64" 
+                     alt="${asset.base_name}" 
+                     style="width: 64px; height: 64px; object-fit: cover; border-radius: 4px; cursor: pointer;"
+                     onclick="dashboard.previewImage('${asset.path}', '${asset.name}')"
+                     onerror="this.style.display='none'; this.parentElement.querySelector('.file-icon').style.display='inline';">
+                <span class="file-icon" style="display: none;">${this.getFileIcon(primaryExt)}</span>
+            </div>` : 
+            `<div class="asset-thumbnail">
+                <span class="file-icon">${this.getFileIcon(primaryExt)}</span>
+            </div>`;
+        
         return `
             <div class="asset-item grouped-asset" data-file-type="${primaryExt}">
+                ${thumbnailHtml}
                 <div class="asset-info">
                     <div class="asset-name">
-                        <span class="file-icon">🖼️</span>
                         ${asset.base_name}
                         <span class="group-badge">${asset.total_assets} formats</span>
                     </div>
@@ -637,7 +657,7 @@ class PackagingDashboard {
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 90%; max-height: 90%;">
                 <div class="modal-header">
-                    <h3>🖼️ Image Preview: ${filename}</h3>
+                    <h3>Image Preview: ${filename}</h3>
                     <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
                 </div>
                 <div style="padding: 2rem; text-align: center;">
@@ -728,6 +748,26 @@ class PackagingDashboard {
     truncateText(text, maxLength) {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
+    }
+
+    getFileIcon(ext) {
+        const iconPath = (iconName) => `<img src="icons/${iconName}.svg" alt="${ext}" style="width: 24px; height: 24px; filter: invert(32%) sepia(35%) saturate(1654%) hue-rotate(272deg) brightness(89%) contrast(92%);">`;
+        
+        const icons = {
+            'png': iconPath('image'),
+            'jpg': iconPath('image'), 
+            'jpeg': iconPath('image'), 
+            'gif': iconPath('image'),
+            'ai': iconPath('image'),
+            'psd': iconPath('image'), 
+            'pdf': iconPath('file'),
+            'docx': iconPath('file'), 
+            'txt': iconPath('file'), 
+            'indd': iconPath('file'),
+            'zip': iconPath('package'), 
+            'rar': iconPath('package')
+        };
+        return icons[ext] || iconPath('file');
     }
 }
 
